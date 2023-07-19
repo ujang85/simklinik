@@ -17,7 +17,7 @@
         <div class="form-group">
           <div class="col-md-12">
             <div class="mb-3">
-                <label  class="form-label"> <span class="text-danger">Content</span></label>
+                <label  class="form-label">Content</label>
                 <input type="textarea">
             </div>
         </div>
