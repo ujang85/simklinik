@@ -8,63 +8,54 @@
   </main>
 </template>
 
-<script setup>
-import { reactive, onMounted } from 'vue';
-import { db, timestamp } from '../config/firebaseConfig';
-import { addDoc, collection, doc, onSnapshot } from 'firebase/firestore';
-
-const todo = reactive({
-  title: "",
-  content: "",
-  data: [],
-});
-
-// Function to read data
-const readData = async () => {
-  onSnapshot(collection(db, "todos"), (querySnapshot) => {
-    const todos = [];
-    querySnapshot.forEach((doc) => {
-      let todo = {
-        id: doc.id,
-        title: doc.data().title,
-        content: doc.data().content,
-      };
-      todos.push(todo);
-    });
-    todo.data = todos;
-  });
-};
-
-// Function to handle form submission
-const handleSubmit = async (formData) => {
-  await addDoc(collection(db, "todos"), {
-    title: formData.title,
-    content: formData.content,
-    createdAt: timestamp,
-    updateAt: timestamp,
-  });
-  // After adding data, read data again to refresh the table
-  readData();
-};
-// Automatically read data when the component is mounted
-onMounted(() => {
-  readData();
-});
-</script>
-
-<style>
-/* Add your styles here */
-</style>
-
 <script>
-// Import child components
-import FormInput from '../component/formInput.vue';
-import Table from '../component/table.vue';
+import { usePostStore } from '../stores/store';
 
 export default {
-  components: {
-    FormInput,
-    Table,
+  name: 'HomeView',
+  setup() {
+    const postStore = usePostStore();
+
+    return {
+      postStore
+    };
   },
+  mounted() {
+    this.postStore.getPosts(); // Mengambil daftar post saat komponen dimuat
+  },
+  data() {
+    return {
+      newPostTitle: '',
+      newPostContent: ''
+    };
+  },
+  methods: {
+    addPost() {
+      // Membuat post baru
+      const newPost = {
+        title: this.newPostTitle,
+        content: this.newPostContent,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      this.postStore.addPost(newPost)
+        .then(() => {
+          this.newPostTitle = '';
+          this.newPostContent = '';
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    deletePost(postId) {
+      // Menghapus post berdasarkan ID
+      this.postStore.deletePost(postId)
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }
 };
 </script>
+
